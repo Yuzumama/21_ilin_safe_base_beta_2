@@ -9,8 +9,8 @@
 
     <div class="main_back_style">
         <div id="video_back" class="video_back_style">
-            <div class="video_range_style">
-                <video autoplay class="video_style"></video>
+            <div id="video_view" class="video_range_style">
+                <video id="webcam" autoplay class="video_style"></video>
             </div>
             <div id="all_dests" class="empty">
                 <div id="dest_01" class="dest_back_style">
@@ -36,6 +36,10 @@
             <div id="hint_character_img" class="hint_character_img_style">
             </div>
         </div>
+        <div class="hint_character_lightbulb_back_style">
+            <div id="hint_character_lightbulb" class="empty">
+            </div>
+        </div>
         <div class="show_chat_btn_base_style">
             <div id="show_chat_btn" class="show_chat_btn_style"></div>
         </div>
@@ -50,7 +54,10 @@
         </div>
         <div class="full_screen_base_style">
             <div id="title_background" class="title_background_style">
-                <div id="title_start" class="title_start_style"></div>
+                <div>
+                    <div id="title_start_2" class="title_start_2_style"></div>
+                    <div id="title_start_3" class="title_start_3_style"></div>
+                </div>
             </div>
         </div>
         <div class="full_screen_base_style">
@@ -80,46 +87,51 @@
                     <div id="chat_output" class="chat_output_style">
 
                         <!-- My message sample
-    <div class="my_message_back_style">
-        <div class="my_message_style">
-            My Message !!
-        </div>
-        <div class="my_message_operation_back_style">
-            <div class="my_message_status_style">unseenable_msg</div>
-            <span data-key="msgKey" class="my_message_delete_btn_style"> delete </span>
-        </div>
-    </div>
-        -->
+            <div class="my_message_back_style">
+                <div class="my_message_style">
+                    My Message !!
+                </div>
+                <div class="my_message_operation_back_style">
+                    <div class="my_message_status_style">unseenable_msg</div>
+                    <span data-key="msgKey" class="my_message_delete_btn_style"> delete </span>
+                </div>
+            </div>-->
                         <!-- Other one's message sample
-    <div class="other_one_message_back_style">
-        <div class="other_one_name_style">
-            User
-        </div>
-        <div class="other_one_message_style">
-            Other one's Message
-        </div>
-    </div>
-        -->
+            <div class="other_one_message_back_style">
+                <div class="other_one_name_style">
+                    User
+                </div>
+                <div class="other_one_message_style">
+                    Other one's Message
+                </div>
+            </div>-->
+
                     </div>
                 </div>
-                <div class="chat_input_back_style">
-                    <textarea id="chat_input" class="chat_input_style" cols="30" rows="10"></textarea>
-                    <button id="chat_send_btn" class="chat_send_btn_style"> Send </button>
+                <div class="chat_icon_back_style">
+                    <div id="chat_icon_home" class="chat_icon_home_style"></div>
+                    <div id="chat_icon_company" class="chat_icon_company_style"></div>
+                    <div id="chat_icon_school" class="chat_icon_school_style"></div>
+                    <div id="chat_icon_safebase" class="chat_icon_safebase_style"></div>
+                </div>
+                <div id="chat_option_btn_back" class="chat_option_btn_back_hide_style">
+                    <button id="chat_option_btn" class="chat_option_btn_style">▲</button>
                 </div>
                 <div id="chat_option_back" class="chat_option_back_hide_style">
+                    <div class="chat_input_back_style">
+                        <textarea id="chat_input" class="chat_input_style" cols="30" rows="10"></textarea>
+                        <button id="chat_send_btn" class="chat_send_btn_style"> Send </button>
+                    </div>
                     <div class="chat_user_name_back_style">
                         <div class="chat_option_item_name_style"> なまえ </div>
                         <textarea id="chat_user_name" cols="30" rows="1" class="chat_user_name_style"></textarea>
                     </div>
                 </div>
-                <div class="chat_option_btn_back_style">
-                    <button id="chat_option_btn" class="chat_option_btn_style">▼</button>
-                </div>
             </div>
         </div>
     </div>
     
-    
+    <div id="dbg_msg" style="font-size: 50px;"></div>
 
 </body>
 
@@ -140,7 +152,29 @@
 
 <script src='https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=[AniMk5fCk4W1_RLIhL9R_sYQLrR2CSTZXeOGOcvczwyrJJx3cYtlPyR8oWt10aPl]' async defer></script>
 
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm/vision_wasm_internal.js" crossorigin="anonymous"></script>
+
 <script type="module">
+
+    // Object detection
+    import { ObjectDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2";
+    let objectDetector = null;
+    let runningMode = "VIDEO";
+
+    // Initialize the object detector
+    const initializeObjectDetector = async () => {
+        const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.2/wasm");
+        objectDetector = await ObjectDetector.createFromOptions(vision, {
+            baseOptions: {
+                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite`,
+                delegate: "GPU"
+            },
+            scoreThreshold: 0.5,
+            runningMode: runningMode,
+            display_names: 'ja'
+        });
+    };
+    initializeObjectDetector();
 
     let user_name = "";
 
@@ -251,10 +285,12 @@
     $("#chat_option_btn").on("click", function () {
         if (chat_option_shows) {
             $("#chat_option_back").attr("class", "chat_option_back_hide_style");
+            $("#chat_option_btn_back").attr("class", "chat_option_btn_back_hide_style");
             chat_option_shows = false;
         }
         else {
             $("#chat_option_back").attr("class", "chat_option_back_style");
+            $("#chat_option_btn_back").attr("class", "chat_option_btn_back_style");
             chat_option_shows = true;
         }
     });
@@ -266,6 +302,8 @@
         let h = "";
         // for loop, but for the first item
         let i = 0;
+
+        let prev_sender = "";
 
         for (i = 0; i < messages_on_server.length; i += 1) {
             let msgKey = messages_on_server[i].key;
@@ -304,15 +342,25 @@
 
             // Show other one's message only when the display time is passed
             else if (cur_time >= msg_display_time) {
-                h += '<div class="other_one_message_back_style">' +
-                    '<div class="other_one_name_style">' +
-                    msg.uname +
-                    '</div>' +
-                    '<div class="other_one_message_style">' +
-                    msg.text +
-                    '</div>' +
-                    '</div>';
+                if (msg.uname == prev_sender) {
+                    h += '<div class="other_one_message_back_style">' +
+                        '<div class="other_one_message_style">' +
+                        msg.text +
+                        '</div>' +
+                        '</div>';
+                }
+                else {
+                    h += '<div class="other_one_message_back_style">' +
+                        '<div class="other_one_name_style">' +
+                        msg.uname +
+                        '</div>' +
+                        '<div class="other_one_message_style">' +
+                        msg.text +
+                        '</div>' +
+                        '</div>';
+                }
             }
+            prev_sender = msg.uname;
         }
 
         $("#chat_output").html(h);
@@ -347,6 +395,62 @@
         }
     });
 
+    $("#chat_icon_home").on("click", function () {
+        // Get current date and time
+        let display_time = new Date();
+
+        const msg = {
+            displaytime: display_time.toString(),
+            uname: user_name,
+            text: "家にいるよ"
+        };
+
+        const newPostRef = push(dbRef);
+        set(newPostRef, msg);
+    });
+
+    $("#chat_icon_company").on("click", function () {
+        // Get current date and time
+        let display_time = new Date();
+
+        const msg = {
+            displaytime: display_time.toString(),
+            uname: user_name,
+            text: "会社にいるよ"
+        };
+
+        const newPostRef = push(dbRef);
+        set(newPostRef, msg);
+    });
+
+    $("#chat_icon_school").on("click", function () {
+        // Get current date and time
+        let display_time = new Date();
+
+        const msg = {
+            displaytime: display_time.toString(),
+            uname: user_name,
+            text: "学校にいるよ"
+        };
+
+        const newPostRef = push(dbRef);
+        set(newPostRef, msg);
+    });
+
+    $("#chat_icon_safebase").on("click", function () {
+        // Get current date and time
+        let display_time = new Date();
+
+        const msg = {
+            displaytime: display_time.toString(),
+            uname: user_name,
+            text: "安全基地にいるよ"
+        };
+
+        const newPostRef = push(dbRef);
+        set(newPostRef, msg);
+    });
+
     // Check firebase's status when add new message
     onChildAdded(dbRef, function (data) {
         const msg = data.val();
@@ -371,7 +475,7 @@
             }
         });
 
-        // Update the output message       
+        // Update the output message
         showMessages();
     });
 
@@ -468,7 +572,7 @@
     // 目的地の経度・緯度・高度
     let destLatitude = 35.7102043;
     let destLongitude = 139.7042221;
-    let destAltitude = 64.2807633264114; // No altitude    
+    let destAltitude = 64.2807633264114; // No altitude
 
     // カメラの高度
     let videoWidth = parseInt($("video").css("width"));
@@ -498,7 +602,7 @@
                 draggable:false,          //MouseDraggable
                 enableClickedStyle:false, //Click
                 enableHoverStyle:true,   //MouseOver
-                visible: true    
+                visible: true
             });
 
             //Add the pushpin to the map　マップ上所在地を設定（青ピン）
@@ -527,7 +631,7 @@
                 draggable:false,          //MouseDraggable
                 enableClickedStyle:false, //Click
                 enableHoverStyle:true,   //MouseOver
-                visible:true   
+                visible:true
             });
 
             //Add the pushpin to the map
@@ -578,8 +682,9 @@
         }
         //ユーザーからカメラの使用許可をもらったら、カメラが撮った画像を携帯・パソコンの画面に映る
         userMedia.then((localMediaStream) => {
-            const video = document.querySelector("video");
+            const video = document.getElementById("webcam");
             video.srcObject = localMediaStream;
+            video.addEventListener("loadeddata", predictWebcam);
         });
 
         userMedia.catch((error) => {
@@ -603,7 +708,7 @@
 
     $("#user_hint_ok").on("click", function () {
         // メッセージが終わる後、カメラはオンにする設定
-        if (curr_user_hint_index == 8) {
+        if (curr_user_hint_index == user_hint_messages.length) {
             turnOnCamera();
             $("#all_dests").attr("class", "all_dests_style");
         }
@@ -630,8 +735,6 @@
 
     let posHandle = 0;
 
-    console.log = positions_on_server;
-
     // Position success　所在地の取得
     function posSuccess(pos) {
         const crd = pos.coords;
@@ -653,13 +756,13 @@
             // Remove curr pos pin and add again with new current position
             //取得後の地図更新
             map.entities.remove(curr_pos_pin);
-            
+
             curr_pos_pin = new Microsoft.Maps.Pushpin(curr_location, {
                 color: "blue",
                 draggable:false,          //MouseDraggable
                 enableClickedStyle:false, //Click
                 enableHoverStyle:true,   //MouseOver
-                visible:true   
+                visible:true
             });
 
             //Add the pushpin to the map
@@ -797,6 +900,7 @@
                 $("#chat_main_back").attr("class", "empty");
                 $("#show_map_btn").css("opacity", "1.0");
                 $("#reset_direction_btn").css("opacity", "1.0");
+                $("#hint_character_back").css("opacity", "1.0");
                 chat_shows = false;
             }
             else {
@@ -804,6 +908,7 @@
                 $("#chat_main_back").attr("class", "chat_main_back_style");
                 $("#show_map_btn").css("opacity", "0.0");
                 $("#reset_direction_btn").css("opacity", "0.0");
+                $("#hint_character_back").css("opacity", "0.0");
                 chat_shows = true;
             }
         }
@@ -813,7 +918,7 @@
     //https://web.dev/articles/device-orientation?hl=ja
     function dirHandler(event) {
         let absolute = event.absolute; //絶対方向、相対方向
-        let deg_alpha = event.alpha; 
+        let deg_alpha = event.alpha;
         let deg_beta = event.beta;
         let deg_gamma = event.gamma;
 
@@ -893,7 +998,7 @@
         let destHeight = parseInt($("#dest_01").css("height"));
         let isDestOutsideVideo = (xPosInVideo < videoPaddingHor || xPosInVideo > videoWidth - videoPaddingHor ||
                                   yPosInVideo < videoPaddingVer || yPosInVideo > videoHeight - videoPaddingVer);
-        
+
         //赤いピンはフレーム内にする
         let xPosInVideoClamp = Math.max(Math.min(xPosInVideo, videoWidth - videoPaddingHor), videoPaddingHor);
         let yPosInVideoClamp = videoHeight - Math.max(Math.min(yPosInVideo, videoHeight - videoPaddingVer), videoPaddingVer);
@@ -901,7 +1006,7 @@
         //赤いピンの向き・角度を計算する
         let tanValue = vecToDestInCamera2.x / vecToDestInCamera2.y;
         let tanAngle = Math.atan(tanValue);
-        
+
         let tanAngleInDegree = tanAngle / Math.PI * 180.0;
         if (yPosInVideo == 0.0) {
             if (xPosInVideo > 0.0) {
@@ -1028,9 +1133,187 @@
             $("#hint_character_img").attr("class", "hint_character_anim_style");
         }
     }
-    
-    $("#title_background").on("click", function() {
+
+    $("#title_start_2").on("click", function() {
         hideTitleAndShowCharacter();
+    });
+
+    $("#title_start_3").on("click", function () {
+
+        curr_user_hint_index = user_hint_messages.length;
+
+        $("#user_hint_bubble").text("おかえり~ またいっしょにぼうけんしようぜ！");
+
+        hideTitleAndShowCharacter();
+    });
+
+
+    let video = document.getElementById("webcam");
+    let liveView = document.getElementById("video_view");
+
+    // Keep a reference of all the child elements we create
+    // so we can remove them easilly on each render.
+    var children = [];
+    let detect_results = [];
+
+    let lastVideoTime = -1;
+    async function predictWebcam() {
+
+        // if image mode is initialized, create a new classifier with video runningMode.
+
+        let startTimeMs = performance.now();
+        // Detect objects using detectForVideo.
+        if (video.currentTime !== lastVideoTime && objectDetector != null) {
+            lastVideoTime = video.currentTime;
+            const detections = objectDetector.detectForVideo(video, startTimeMs);
+            displayVideoDetections(detections);
+        }
+        // Call this function again to keep predicting when the browser is ready.
+        window.requestAnimationFrame(predictWebcam);
+    }
+
+    function displayVideoDetections(result) {
+        // Remove any highlighting from previous frame.
+/*        for (let child of children) {
+            liveView.removeChild(child);
+        }
+        children.splice(0);*/
+
+        // Remove any results from previous frame
+        detect_results.splice(0);
+
+        let liveViewOffsets = $("#video_view").offset();
+
+        // Iterate through predictions and draw them to the live view
+        for (let detection of result.detections) {
+/*            const p = document.createElement("p");
+            p.innerText =
+                detection.categories[0].categoryName +
+                " - with " +
+                Math.round(parseFloat(detection.categories[0].score) * 100) +
+                "% confidence.";
+            p.style =
+                "left: " +
+                (video.offsetWidth -
+                    detection.boundingBox.width -
+                    detection.boundingBox.originX + liveViewOffsets.left) +
+                "px;" +
+                "top: " +
+                (detection.boundingBox.originY + liveViewOffsets.top) +
+                "px; " +
+                "width: " +
+                (detection.boundingBox.width - 10) +
+                "px;" +
+                "z-index: 3;";
+            const highlighter = document.createElement("div");
+            highlighter.setAttribute("class", "highlighter");
+            highlighter.style =
+                "left: " +
+                (video.offsetWidth -
+                    detection.boundingBox.width -
+                    detection.boundingBox.originX + liveViewOffsets.left) +
+                "px;" +
+                "top: " +
+                (detection.boundingBox.originY + liveViewOffsets.top) +
+                "px;" +
+                "width: " +
+                (detection.boundingBox.width - 10) +
+                "px;" +
+                "height: " +
+                detection.boundingBox.height +
+                "px;" +
+                "z-index: 3;";
+            liveView.appendChild(highlighter);
+            liveView.appendChild(p);
+            // Store drawn objects in memory so they are queued to delete at next call.
+            children.push(highlighter);
+            children.push(p);*/
+
+            // Store in memory for things
+            {
+                detect_results.push(detection);
+            }
+        }
+
+        // See if anything found
+        if ($("#user_hint_bubble_back").attr("class") == "empty" &&
+            detect_results.length > 0 &&
+            !map_shows &&
+            !reset_menu_shows &&
+            !chat_shows) {
+            $("#hint_character_lightbulb").attr("class", "hint_character_lightbulb_style");
+        }
+        else {
+            $("#hint_character_lightbulb").attr("class", "empty");
+        }
+    }
+
+    let category_dict = [];
+    category_dict["person"] = "人間";
+    category_dict["cell phone"] = "携帯";
+    category_dict["clock"] = "時計";
+
+    function toJap(name) {
+        if (category_dict[name] === undefined)
+            return name;
+        else
+            return category_dict[name];
+    }
+
+    let display_category_name = [];
+
+    $("#hint_character_lightbulb").on("click", function () {
+
+        if (detect_results.length > 0) {
+
+            // Sort objects
+            detect_results.sort(function (a, b) {
+                let a_area = a.boundingBox.width * a.boundingBox.height;
+                let b_area = b.boundingBox.width * b.boundingBox.height;
+
+                if (a_area > b_area) {
+                    return -1;
+                }
+                else if (a_area < b_area) {
+                    return 1;
+                }
+                else {
+                    return 0;
+                }
+            })
+
+            // 最初の三つの異なる物の名前を標示する
+            display_category_name.splice(0);
+
+            display_category_name.push(detect_results[0].categories[0].categoryName);
+            let detect_index = 1;
+            for (; detect_index < detect_results.length; detect_index += 1) {
+                if (display_category_name[0] != detect_results[detect_index].categories[0].categoryName) {
+                    display_category_name.push(detect_results[detect_index].categories[0].categoryName);
+                    break;
+                }
+            }
+
+            for (; detect_index < detect_results.length; detect_index += 1) {
+                if (display_category_name[0] != detect_results[detect_index].categories[0].categoryName &&
+                    display_category_name[1] != detect_results[detect_index].categories[0].categoryName) {
+                    display_category_name.push(detect_results[detect_index].categories[0].categoryName);
+                    break;
+                }
+            }
+
+            let display_msg = "これは " + toJap(display_category_name[0]);
+            if (display_category_name.length > 1) {
+                display_msg = display_msg + " と " + toJap(display_category_name[1]);
+            }
+            if (display_category_name.length > 2) {
+                display_msg = display_msg + " と " + toJap(display_category_name[2]);
+            }
+            display_msg = display_msg + " だね！";
+
+            $("#user_hint_bubble_back").attr("class", "user_hint_bubble_back_style");
+            $("#user_hint_bubble").html(display_msg);
+        }
     });
 
 </script>
