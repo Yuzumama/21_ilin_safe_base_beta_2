@@ -1096,7 +1096,7 @@
 
             // Hide message and use normal character image
             else {
-                $("#user_hint_bubble_back").attr("class", "empty");
+//                $("#user_hint_bubble_back").attr("class", "empty");
 
                 $("#hint_character_img").css("background-image", "url('./img/squirrel_normal.png')");
             }
@@ -1252,6 +1252,15 @@
     category_dict["person"] = "人間";
     category_dict["cell phone"] = "携帯";
     category_dict["clock"] = "時計";
+    category_dict["keyboard"] = "キーボード";
+    category_dict["laptop"] = "ノートパソコン";
+    category_dict["mouse"] = "マウス";
+    category_dict["cup"] = "コップ";
+    category_dict["potted plant"] = "鉢植え";
+    category_dict["book"] = "本";
+    category_dict["bed"] = "ベッド";
+    category_dict["refrigerator"] = "冷蔵庫";
+    category_dict["tv"] = "テレビ";
 
     function toJap(name) {
         if (category_dict[name] === undefined)

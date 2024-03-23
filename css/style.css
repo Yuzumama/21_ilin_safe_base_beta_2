@@ -525,7 +525,7 @@ body {
     background-image: url("../img/title_background.png");
     background-size: cover;
     background-position: center;
-    z-index: 7;
+    z-index: 10;
     overflow: hidden;
 }
 
