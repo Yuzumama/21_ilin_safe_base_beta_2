@@ -262,6 +262,7 @@ body {
     display: flex;
     justify-content: left;
     align-items: center;
+    opacity: 0.0;
 }
 
 .reset_direction_btn_style {
@@ -568,6 +569,7 @@ body {
     position: relative;
     left: 100px;
     top: -1740px;
+    opacity: 0.0;
 }
 
 .show_chat_btn_style {

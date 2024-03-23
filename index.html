@@ -10,7 +10,7 @@
     <div class="main_back_style">
         <div id="video_back" class="video_back_style">
             <div id="video_view" class="video_range_style">
-                <video id="webcam" autoplay class="video_style"></video>
+                <video id="webcam" autoplay playsinline muted class="video_style"></video>
             </div>
             <div id="all_dests" class="empty">
                 <div id="dest_01" class="dest_back_style">
@@ -40,7 +40,7 @@
             <div id="hint_character_lightbulb" class="empty">
             </div>
         </div>
-        <div class="show_chat_btn_base_style">
+        <div id="show_chat_btn_base" class="show_chat_btn_base_style">
             <div id="show_chat_btn" class="show_chat_btn_style"></div>
         </div>
         <div class="user_hint_bubble_base_style">
@@ -1120,6 +1120,12 @@
             opacity: title_opacity
         });
         $("#hint_character_back").css({
+            opacity: 1.0 - title_opacity
+        });
+        $("#button_back_style").css({
+            opacity: 1.0 - title_opacity
+        });
+        $("#show_chat_btn_base").css({
             opacity: 1.0 - title_opacity
         });
 
