@@ -28,7 +28,7 @@
         <div class="video_frame_back_style">
             <div class="video_frame_style"></div>
         </div>
-        <div class="button_back_style">
+        <div id="button_back" class="button_back_style">
             <button id="reset_direction_btn" class="reset_direction_btn_style"></button>
             <button id="show_map_btn" class="map_btn_style"></button>
         </div>
@@ -120,10 +120,10 @@
                 <div id="chat_option_back" class="chat_option_back_hide_style">
                     <div class="chat_input_back_style">
                         <textarea id="chat_input" class="chat_input_style" cols="30" rows="10"></textarea>
-                        <button id="chat_send_btn" class="chat_send_btn_style"> Send </button>
+                        <button id="chat_send_btn" class="chat_send_btn_style"></button>
                     </div>
                     <div class="chat_user_name_back_style">
-                        <div class="chat_option_item_name_style"> なまえ </div>
+                        <div class="chat_option_item_name_style"></div>
                         <textarea id="chat_user_name" cols="30" rows="1" class="chat_user_name_style"></textarea>
                     </div>
                 </div>
@@ -1122,7 +1122,7 @@
         $("#hint_character_back").css({
             opacity: 1.0 - title_opacity
         });
-        $("#button_back_style").css({
+        $("#button_back").css({
             opacity: 1.0 - title_opacity
         });
         $("#show_chat_btn_base").css({

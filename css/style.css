@@ -11,6 +11,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: start;
+    font-family: "メイリオ", "arial";
 }
 
 /* Empty, for hidden list of the right-upper side */
@@ -577,8 +578,8 @@ body {
     position: relative;
     left: 0px;
     top: 0px;
-    width: 150px;
-    height: 150px;
+    width: 100px;
+    height: 100px;
     background-image: url("../img/sun.png");
     background-size: cover;
     background-position: center;
@@ -695,10 +696,14 @@ textarea.chat_input_style {
 
 .chat_send_btn_style {
     margin-top: 20px;
-    width: 130px;
-    height: 130px;
+    width: 150px;
+    height: 150px;
     font-size: 40px;
-    border-radius: 20px;
+    border-width: 0px;
+    background-color: rgba(0, 0, 0, 0.0);
+    background-image: url("../img/send_button.png");
+    background-size: cover;
+    background-position: center;
 }
 
 .chat_option_back_style {
@@ -739,9 +744,12 @@ textarea.chat_input_style {
 
 .chat_option_item_name_style {
     width: 200px;
-    height: 80px;
+    height: 120px;
     margin-top: 50px;
     font-size: 50px;
+    background-image: url("../img/name.png");
+    background-size: cover;
+    background-position: center;
 }
 
 textarea.chat_user_name_style {
