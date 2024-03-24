@@ -82,6 +82,9 @@
             </div>
         </div>
         <div class="full_screen_base_style">
+            <div class="hidden_btn_back_style">
+                <div id="hidden_btn" class="hidden_btn_style"></div>
+            </div>
             <div id="chat_main_back" class="empty">
                 <div class="chat_output_back_style">
                     <div id="chat_output" class="chat_output_style">
@@ -217,7 +220,48 @@
 
     // Your web app's Firebase configuration
     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    import { getFirebaseConfig } from "./js/firebase_config.js";
+    //    import { getFirebaseConfig } from "./js/firebase_config.js";
+
+    function getFirebaseConfig() {
+
+        let sApiKey = localStorage.getItem("apiKey");
+        if (sApiKey == null) {
+            sApiKey = prompt("Input api key: ");
+            localStorage.setItem("apiKey", sApiKey);
+        }
+        let sProjectId = localStorage.getItem("projectId");
+        if (sProjectId == null) {
+            sProjectId = prompt("Input project id: ");
+            localStorage.setItem("projectId", sProjectId);
+        }
+        let sSenderId = localStorage.getItem("senderId");
+        if (sSenderId == null) {
+            sSenderId = prompt("Input sender id: ");
+            localStorage.setItem("senderId", sSenderId);
+        }
+        let sAppId = localStorage.getItem("appId");
+        if (sAppId == null) {
+            sAppId = prompt("Input app id: ");
+            localStorage.setItem("appId", sAppId);
+        }
+        let sMeasurementId = localStorage.getItem("measurementId");
+        if (sMeasurementId == null) {
+            sMeasurementId = prompt("Input measurement id: ");
+            localStorage.setItem("measurementId", sMeasurementId);
+        }
+
+        const firebaseConfig = {
+            apiKey: sApiKey,
+            authDomain: sProjectId + ".firebaseapp.com",
+            projectId: sProjectId,
+            storageBucket: sProjectId + ".appspot.com",
+            messagingSenderId: sSenderId,
+            appId: sAppId,
+            measurementId: sMeasurementId
+        };
+        return firebaseConfig;
+    }
+
     let firebaseConfig = getFirebaseConfig();
 
     // Initialize Firebase
@@ -916,22 +960,37 @@
 
     // Device orientation　携帯の向き情報を取得する
     //https://web.dev/articles/device-orientation?hl=ja
+
+    let curr_deg_alpha = 0.0;
+    let curr_deg_beta = 0.0;
+    let curr_deg_gamma = 0.0;
+    let curr_absolute = false;
+
     function dirHandler(event) {
-        let absolute = event.absolute; //絶対方向、相対方向
-        let deg_alpha = event.alpha;
-        let deg_beta = event.beta;
-        let deg_gamma = event.gamma;
+        curr_absolute = event.absolute; //絶対方向、相対方向
+        curr_deg_alpha = event.alpha;
+        curr_deg_beta = event.beta;
+        curr_deg_gamma = event.gamma;
 
         // Save first get orientation ねこのコンパスにて調整する
         if (degree_need_initialized) {
-            init_alpha = deg_alpha;
-            init_beta = deg_beta;
-            init_gamma = deg_gamma;
+            init_alpha = curr_deg_alpha;
+            init_beta = curr_deg_beta;
+            init_gamma = curr_deg_gamma;
 
             degree_need_initialized = false;
         }
+    }
+
+    window.addEventListener("deviceorientation", dirHandler);
+
+    function updateOrientationAndPosition() {
+        let deg_alpha = curr_deg_alpha;
+        let deg_beta = curr_deg_beta;
+        let deg_gamma = curr_deg_gamma;
+
         //相対方向を調整
-        if (absolute == false) {
+        if (curr_absolute == false) {
             deg_alpha -= init_alpha;
             deg_beta -= init_beta;
             deg_gamma -= init_gamma;
@@ -997,7 +1056,7 @@
         let destWidth = parseInt($("#dest_01").css("width"));
         let destHeight = parseInt($("#dest_01").css("height"));
         let isDestOutsideVideo = (xPosInVideo < videoPaddingHor || xPosInVideo > videoWidth - videoPaddingHor ||
-                                  yPosInVideo < videoPaddingVer || yPosInVideo > videoHeight - videoPaddingVer);
+            yPosInVideo < videoPaddingVer || yPosInVideo > videoHeight - videoPaddingVer);
 
         //赤いピンはフレーム内にする
         let xPosInVideoClamp = Math.max(Math.min(xPosInVideo, videoWidth - videoPaddingHor), videoPaddingHor);
@@ -1057,19 +1116,9 @@
                 $("#all_dests").attr("class", "all_dests_style");
             }
 
-            // Show hint if user faces wrong direction　目的地と逆方向の時、逆方向の事をユーザーにお知らせする
-            // See direction
-            if (vecToDestInCamera.z < 0.0) {
-                $("#user_hint_bubble_back").attr("class", "user_hint_bubble_back_style");
-                $("#user_hint_bubble").attr("class", "user_hint_bubble_style");
-                $("#user_hint_bubble").text("ぎゃくだよ！　　　　ふりかえって。");
-
-                // Show character image
-                $("#hint_character_img").css("background-image", "url('./img/squirrel_look_side.png')");
-            }
-
             // See distance　目的地に近く着いたとき
-            else if (distToDest < distToApproach) {
+
+            if (distToDest < distToApproach) {
                 $("#user_hint_bubble_back").attr("class", "user_hint_bubble_back_style");
                 $("#user_hint_bubble").attr("class", "user_hint_bubble_style");
                 $("#user_hint_bubble").text("ついたよ！");
@@ -1091,19 +1140,32 @@
 
                     const newPostRef = push(dbRef);
                     set(newPostRef, msg);
+
+                    arrival_message_already_sent = true;
                 }
+            }
+
+            // Show hint if user faces wrong direction　目的地と逆方向の時、逆方向の事をユーザーにお知らせする
+            // See direction
+            else if (vecToDestInCamera.z < 0.0) {
+                $("#user_hint_bubble_back").attr("class", "user_hint_bubble_back_style");
+                $("#user_hint_bubble").attr("class", "user_hint_bubble_style");
+                $("#user_hint_bubble").text("ぎゃくだよ！　　　　ふりかえって。");
+
+                // Show character image
+                $("#hint_character_img").css("background-image", "url('./img/squirrel_look_side.png')");
             }
 
             // Hide message and use normal character image
             else {
-//                $("#user_hint_bubble_back").attr("class", "empty");
+                //                $("#user_hint_bubble_back").attr("class", "empty");
 
                 $("#hint_character_img").css("background-image", "url('./img/squirrel_normal.png')");
             }
         }
     }
 
-    window.addEventListener("deviceorientation", dirHandler);
+    setInterval(updateOrientationAndPosition, 500);
 
     // Hide title and show character
     let title_opacity = 1.0;
@@ -1329,6 +1391,25 @@
             $("#user_hint_bubble_back").attr("class", "user_hint_bubble_back_style");
             $("#user_hint_bubble").html(display_msg);
         }
+    });
+
+    $("#hidden_btn").on("click", function () {
+        alert("Get ready");
+
+        let sApiKey = prompt("Input api key: ");
+        localStorage.setItem("apiKey", sApiKey);
+
+        let sProjectId = prompt("Input project id: ");
+        localStorage.setItem("projectId", sProjectId);
+
+        let sSenderId = prompt("Input sender id: ");
+        localStorage.setItem("senderId", sSenderId);
+
+        let sAppId = prompt("Input app id: ");
+        localStorage.setItem("appId", sAppId);
+
+        let sMeasurementId = prompt("Input measurement id: ");
+        localStorage.setItem("measurementId", sMeasurementId);
     });
 
 </script>
